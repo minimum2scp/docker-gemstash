@@ -3,7 +3,7 @@
 ruby -ryaml -e '
   conf = YAML.load(File.read("/etc/gemstash/config.yml"))
   ENV.each do |k,v|
-    if k =~ /^GEMSTASH_/
+    if k =~ /^GEMSTASH_/ && !v.empty?
       conf[k.sub(/^GEMSTASH_/,"").downcase.to_sym] =
         case v
         when "true"
