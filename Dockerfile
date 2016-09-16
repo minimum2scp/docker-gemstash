@@ -1,7 +1,11 @@
 FROM ruby:2.3.1
 MAINTAINER YAMADA Tsuyoshi <tyamada@minimum2scp.org>
 
-RUN gem install --no-document gemstash
+WORKDIR /usr/src/app
+COPY Gemfile      /usr/src/app
+COPY Gemfile.lock /usr/src/app
+RUN bundle install
+
 RUN mkdir -p /etc/gemstash /var/cache/gemstash
 COPY config.yml /etc/gemstash/config.yml
 COPY entrypoint.sh /entrypoint.sh
