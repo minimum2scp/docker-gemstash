@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+  gemstash:
+    image: minimum2scp/gemstash:latest
+    environment:
+      - GEMSTASH_CACHE_TYPE=memcached
+      - GEMSTASH_MEMCACHED_SERVERS=memcached:11211
+      - GEMSTASH_DB_ADAPTER=postgres
+      - GEMSTASH_DB_URL=postgres://gemstash:gemstash@db/gemstash
+    volumes:
+      - gemstash:/var/cache/gemstash
+    depends_on:
+      - memcached
+      - db
+  memcached:
+    image: memcached:1.4
+  db:
+    image: postgres:9.5
+    environment:
+      - POSTGRES_USER=gemstash
+      - POSTGRES_PASSWORD=gemstash
+      - POSTGRES_DB=gemstash
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+  gemstash: {}
+  db: {}
+

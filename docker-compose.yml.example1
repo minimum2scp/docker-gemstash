@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  gemstash:
+    image: minimum2scp/gemstash:latest
+    volumes:
+      - gemstash:/var/cache/gemstash
+    network_mode: bridge
+
+volumes:
+  gemstash: {}
+
