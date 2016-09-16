@@ -12,8 +12,6 @@ ruby -ryaml -e '
           false
         when "nil"
           nil
-        when "false"
-          false
         when /\A-?\d+\z/
           v.to_i
         else
