@@ -1,0 +1,4 @@
+---
+:base_path: /var/cache/gemstash
+:cache_type: memory
+:db_adapter: sqlite3
