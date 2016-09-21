@@ -1,0 +1,183 @@
+#! /usr/bin/env ruby
+
+require 'etc'
+require 'json'
+require 'yaml'
+require 'fileutils'
+require 'net/http'
+require 'pathname'
+require 'timeout'
+require 'uri'
+
+ENV['BUNDLE_GEMFILE'] = Pathname(__dir__).join("../Gemfile").to_s
+require 'bundler/setup'
+require 'text-table'
+require 'term/ansicolor'
+require 'thor'
+
+module DockerGemstash
+  class Cli < Thor
+    PORT = 9292
+    CONTAINER_NAME = 'gemstash'
+    IMAGE_NAME = 'minimum2scp/gemstash:latest'
+    TMPDIR = "/tmp/docker-gemstash-cli.#{Etc.getlogin}"
+    COMPOSE_PROJECT = 'gemstash'
+    COMPOSE_YAML = File.read(__dir__ + '/docker-compose.yml.tmpl') % {
+      container_name: CONTAINER_NAME,
+      image_name: IMAGE_NAME,
+      port: PORT,
+    }
+
+    desc 'start', 'start gemstash container'
+    def start
+      docker_compose["up -d"]
+    end
+
+    desc 'set', 'bundle config --global mirror.https://rubygems.org'
+    def set
+      if listen_addrs.empty?
+        return
+      end
+
+      selected = IO.popen("peco", "r+") do |pipe|
+        pipe.puts listen_addr_table
+        pipe.close_write
+        pipe.gets
+      end
+
+      if !selected || selected.empty? || selected.sub(/[\s+|-]*/,'') == ''
+        return
+      end
+
+      desc, address, port, cmd = selected.chomp.strip.split('|', 6).map!{|col| col.strip!}[1,5]
+
+      system cmd
+    end
+
+    desc 'stop', 'stop gemstash container'
+    def stop
+      unset
+      docker_compose["kill"]
+      docker_compose["rm -f"]
+    end
+
+    desc 'unset', 'bundle config --delete mirror.https://rubygems.org'
+    def unset
+      system unset_command
+    end
+
+    desc 'status', 'status gemstash container'
+    def status
+      puts "## docker-compose ps"
+      docker_compose["ps"]
+      puts ""
+
+      puts "## disk usage"
+      docker_exec["du -sh /var/cache/gemstash"]
+      puts ""
+
+      puts "## listening address and ports"
+      puts listen_addr_table
+      puts ""
+
+      puts "## bundle config --global"
+      system "bundle config --global"
+    end
+
+    no_commands do
+      def prepare_compose
+        unless File.directory?(TMPDIR)
+          FileUtils.mkdir TMPDIR
+        end
+        unless File.exist?("#{TMPDIR}/docker-compose.yml")
+          File.open("#{TMPDIR}/docker-compose.yml", "w") do |fh|
+            fh << COMPOSE_YAML
+          end
+        end
+      end
+
+      def docker_compose
+        prepare_compose
+        ->(*cmds){ system("docker-compose -p #{COMPOSE_PROJECT} -f #{TMPDIR}/docker-compose.yml #{cmds.join(' ')}") }
+      end
+
+      def docker_exec(options:"")
+        ->(*cmds){ system("docker exec #{options} #{CONTAINER_NAME} #{cmds.join(' ')}") }
+      end
+
+      def container_json
+        unless @container_json
+          prepare_compose
+          system("docker inspect #{CONTAINER_NAME} > #{TMPDIR}/container.json")
+          @container = JSON.parse(File.read("#{TMPDIR}/container.json")).find{|c|
+            c['State']['Status'] == 'running' && c['Name'] == "/#{CONTAINER_NAME}"
+          }
+        end
+        @container
+      end
+
+      def listen_addrs
+        unless container_json
+          return []
+        end
+
+        unless @lisen_addrs
+          @listen_addrs = []
+
+          container_json['NetworkSettings']['Networks'].each do |network_name, network|
+            @listen_addrs << { desc: "container (#{network_name})", address: network['IPAddress'], port: PORT }
+          end
+
+          container_json['NetworkSettings']['Ports']["#{PORT}/tcp"].each do |host_and_port|
+            host, port = host_and_port["HostIp"], host_and_port["HostPort"]
+            if host == "0.0.0.0"
+              if docker_host
+                @listen_addrs << { desc: "DOCKER_HOST", address: docker_host, port: port }
+              else
+                `ip -4 -o a show`.each_line do |line|
+                  dev, ip = ->(a){ [a[1], a[3].sub(/\/\d{1,2}\z/, '')]}[line.split]
+                  @listen_addrs << { desc: "host (#{dev})", address: ip, port: port }
+                end
+              end
+            else
+              @listen_addrs << { desc: "host", address: ip, port: port }
+            end
+          end
+        end
+        @listen_addrs
+      end
+
+      def listen_addr_table
+        table = Text::Table.new
+        table.head = [:desc, :address, :port, :shell]
+        listen_addrs.each do |addr|
+          table.rows << [addr[:desc], addr[:address], addr[:port], set_command(addr[:address], addr[:port])]
+        end
+        table
+      end
+
+      def docker_host
+        unless defined?(@docker_host)
+          begin
+            u = URI.parse(ENV['DOCKER_HOST'])
+            @docker_host = u.scheme == 'tcp' ? u.host : nil
+          rescue
+            @docker_host = nil
+          end
+        end
+        @docker_host
+      end
+
+      def set_command(host, port)
+        "bundle config --global mirror.https://rubygems.org http://#{host}:#{port}"
+      end
+
+      def unset_command
+        "bundle config --delete mirror.https://rubygems.org"
+      end
+    end
+  end
+end
+
+DockerGemstash::Cli.start(ARGV)
+
