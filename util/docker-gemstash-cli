@@ -9,7 +9,7 @@ require 'pathname'
 require 'timeout'
 require 'uri'
 
-ENV['BUNDLE_GEMFILE'] = Pathname(__dir__).join("../Gemfile").to_s
+ENV['BUNDLE_GEMFILE'] = "#{__dir__}/Gemfile"
 require 'bundler/setup'
 require 'text-table'
 require 'term/ansicolor'
