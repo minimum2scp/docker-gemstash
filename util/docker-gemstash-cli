@@ -84,6 +84,11 @@ module DockerGemstash
       system "bundle config --global"
     end
 
+    desc 'log', 'tail gemstash container logs'
+    def log
+      docker_compose["logs -f"]
+    end
+
     no_commands do
       def prepare_compose
         unless File.directory?(TMPDIR)
