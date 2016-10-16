@@ -1,6 +1,8 @@
 FROM ruby:2.3.1
 MAINTAINER YAMADA Tsuyoshi <tyamada@minimum2scp.org>
 
+RUN mkdir -p /usr/src/app
+
 WORKDIR /usr/src/app
 COPY Gemfile      /usr/src/app
 COPY Gemfile.lock /usr/src/app
