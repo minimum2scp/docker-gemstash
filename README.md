@@ -44,6 +44,6 @@ mapped to /etc/gemstash/config.yml by entrypoint script.
 - `GEMSTASH_PROTECTED_FETCH`
 - `GEMSTASH_FETCH_TIMEOUT`
 
-See https://github.com/bundler/gemstash/blob/master/docs/reference.md#configuration for details.
+See https://github.com/bundler/gemstash/blob/master/docs/gemstash-configuration.5.md for details.
 
 
