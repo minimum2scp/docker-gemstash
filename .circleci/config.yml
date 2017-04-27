@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    working_directory: /tmp/docker-gemstash
+    docker:
+      - image: circleci/ruby:2.4.1
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Check docker version
+          command: |
+            set -x
+            docker version
+            docker info
+      - run: docker build -t minimum2scp/gemstash:ci .

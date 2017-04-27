@@ -1,8 +1,0 @@
-machine:
-  services:
-    - docker
-
-test:
-  override:
-    - docker build -t minimum2scp/gemstash:ci .
-
