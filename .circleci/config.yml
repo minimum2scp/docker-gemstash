@@ -14,3 +14,5 @@ jobs:
             docker version
             docker info
       - run: docker build -t minimum2scp/gemstash:ci .
+      - run: bundle check || bundle install --jobs=4
+      - run: DOCKER_IMAGE=minimum2scp/gemstash:ci bundle exec rspec spec/gemstash
