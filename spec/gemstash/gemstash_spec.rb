@@ -21,4 +21,12 @@ describe "gemstash" do
     its(:stdout) { should eq "Gemstash version 1.0.4\n" }
     its(:exit_status) { should eq 0 }
   end
+
+  describe package("serverspec") do
+    it { should_not be_installed.by("gem") }
+  end
+
+  describe package("docker-api") do
+    it { should_not be_installed.by("gem") }
+  end
 end
