@@ -6,7 +6,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY Gemfile      /usr/src/app
 COPY Gemfile.lock /usr/src/app
-RUN bundle install
+RUN bundle install --without=test:development
 
 RUN mkdir -p /etc/gemstash /var/cache/gemstash
 COPY config.yml /etc/gemstash/config.yml
