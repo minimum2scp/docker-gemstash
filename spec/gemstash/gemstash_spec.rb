@@ -14,11 +14,11 @@ describe "gemstash" do
   end
 
   describe package("gemstash") do
-    it { should be_installed.by("gem").with_version("1.0.4") }
+    it { should be_installed.by("gem").with_version("1.1.0") }
   end
 
   describe command("gemstash version") do
-    its(:stdout) { should eq "Gemstash version 1.0.4\n" }
+    its(:stdout) { should eq "Gemstash version 1.1.0\n" }
     its(:exit_status) { should eq 0 }
   end
 
