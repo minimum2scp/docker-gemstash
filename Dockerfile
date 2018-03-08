@@ -1,4 +1,4 @@
-FROM ruby:2.4.3
+FROM ruby:2.4.3-stretch
 MAINTAINER YAMADA Tsuyoshi <tyamada@minimum2scp.org>
 
 RUN mkdir -p /usr/src/app
