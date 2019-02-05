@@ -1,9 +1,20 @@
-version: 2
+version: 2.1
+
+orbs:
+  # https://circleci.com/orbs/registry/orb/sue445/ruby-orbs
+  ruby-orbs: sue445/ruby-orbs@1.4.3
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+
 jobs:
   build:
     working_directory: /tmp/docker-gemstash
     docker:
-      - image: circleci/ruby:2.4.3
+      - image: circleci/ruby:2.6.1
     steps:
       - checkout
       - setup_remote_docker
@@ -14,5 +25,5 @@ jobs:
             docker version
             docker info
       - run: docker build -t minimum2scp/gemstash:ci .
-      - run: bundle check || bundle install --jobs=4
+      - ruby-orbs/bundle-install
       - run: DOCKER_IMAGE=minimum2scp/gemstash:ci bundle exec rspec spec/gemstash
