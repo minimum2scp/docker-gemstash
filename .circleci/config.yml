@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /tmp/docker-gemstash
     docker:
-      - image: circleci/ruby:2.4.3
+      - image: circleci/ruby:2.6.1
     steps:
       - checkout
       - setup_remote_docker
