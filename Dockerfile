@@ -1,4 +1,4 @@
-FROM ruby:2.6.1
+FROM ruby:2.6.2
 MAINTAINER YAMADA Tsuyoshi <tyamada@minimum2scp.org>
 
 RUN mkdir -p /usr/src/app
