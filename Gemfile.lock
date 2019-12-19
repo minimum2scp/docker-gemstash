@@ -41,7 +41,7 @@ GEM
     net-ssh (4.2.0)
     net-telnet (0.1.1)
     puma (3.12.2)
-    rack (2.0.6)
+    rack (2.0.8)
     rack-protection (2.0.4)
       rack
     rspec (3.7.0)
